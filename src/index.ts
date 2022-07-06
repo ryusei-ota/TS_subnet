@@ -1,5 +1,4 @@
-import { exit } from "process"
-import { toUnicode } from "punycode"
+
 
 const ip2bin = (ip: string) => ip.split(".").map(e => Number(e).toString(2).padStart(8, '0')).join('')
 
