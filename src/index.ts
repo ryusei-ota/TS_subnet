@@ -1,5 +1,3 @@
-
-
 const ip2bin = (ip: string) => ip.split(".").map(e => Number(e).toString(2).padStart(8, '0')).join('')
 
 const ip2long = (ip: string) => parseInt(ip2bin(ip), 2)
@@ -109,20 +107,37 @@ const networkAddressList: AddressListType[] =
 
 
 const virtualNetworkAddress = "10.4.0.0"
-const subnetAddress = "10.4.2.0"
-let virtualNetworkNum: number
-
-virtualNetworkNum = virtualNetworkAdd(networkAddressList, virtualNetworkAddress)
-
+const virtualNetworkCidr = 16
+const subnetAddress = "10.4.3.0"
+const subnetCidr = 24
 
 
-if (virtualNetworkNum != 999999) {
-    console.log(subnetAdd(networkAddressList, virtualNetworkNum, subnetAddress))
-    console.log("アドレスが既に存在します")
+
+// subnet 入力時のネットワークアドレス確認
+const ipCheck = ip2long(subnetAddress)
+const cidrCheck = cidr2long(virtualNetworkCidr)
+
+let virtualNetworkNum = virtualNetworkAdd(networkAddressList, virtualNetworkAddress)
+if (virtualNetworkNum != -1) {
+    const flg = subnetAdd(networkAddressList, virtualNetworkNum, subnetAddress)
+    // flgがtrueの場合 : subnetの新規作成可能
+    // flgがfalseの場合 : subnetの作成不可能
+    // 上記の場合仮想ネットワーク[192.168.0.0]サブネット[10.3.3.0]でも作成可能になってしまうなので下記
+
+    const CheckNetworkAddress = long2ip(getNetworkAddr(ipCheck, cidrCheck))
+
+    //subnetAddressのネットワーク部の確認
+    if (flg && CheckNetworkAddress == virtualNetworkAddress) {
+        console.log('ネットワークアドレス部のcheckと被っていないかのcheckを乗り越えた時')
+    } else {
+        console.log('作成不可能')
+    }
 } else {
-    console.log("アドレスの作成が可能です")
+    console.log(`
+        virtualNetworkの作成が可能です
+        virtualNetworkの新規作成プログラム↓
+    `)
 }
-
 
 /**
  * subnetのaddressが作成済かどうかの判定
@@ -147,7 +162,7 @@ function subnetAdd(array: AddressListType[], num: number, subnetAddress: string)
  * @returns
  */
 function virtualNetworkAdd(array: AddressListType[], address: string): number {
-    let count = 999999
+    let count = -1
     for (let i = 0; i < array.length; i++) {
         if (array[i].virtualNetwork.includes(address)) {
             count = i
@@ -194,20 +209,18 @@ function virtualNetworkAdd(array: AddressListType[], address: string): number {
 
 
 
-/*
 
-const ipLong = ip2long("192.168.0.1")
-const cidr = cidr2long(28)
-console.log(`
-IPアドレス: ${long2ip(ipLong)}
-サブネットマスク: /${subnetmask2cidr("255.255.255.0")} (${cidr2subnetmask(24)})
-ネットワークアドレス: ${long2ip(getNetworkAddr(ipLong, cidr))}
-使用可能IP: ${long2ip(getNetworkAddr(ipLong, cidr) + 1)} 〜 ${long2ip(getBroadcastAddr(ipLong, cidr) - 1)}
-ブロードキャストアドレス: ${long2ip(getBroadcastAddr(ipLong, cidr))}
-アドレス数: ${getBroadcastAddr(ipLong, cidr) - getNetworkAddr(ipLong, cidr) + 1}
-ホストアドレス数: ${getBroadcastAddr(ipLong, cidr) - getNetworkAddr(ipLong, cidr) - 1}
-IPアドレスクラス: ${getClass(ipLong)}
-`)
-console.log(`192.168.0.1 は 192.168.0.254/24 に含まれ${inRange(ip2long("192.168.0.1"), ip2long("192.168.1.254"), 24) ? 'ます' : 'ません'}`)
-console.log(`192.168.1.0 は 192.168.0.254/24 に含まれ${inRange(ip2long("192.168.1.0"), ip2long("192.168.0.254"), 24) ? 'ます' : 'ません'}`)
-*/
+// const ipLong = ip2long("192.168.4.1")
+// const cidr = cidr2long(16)
+// console.log(`
+// IPアドレス: ${long2ip(ipLong)}
+// サブネットマスク: /${subnetmask2cidr("255.255.255.0")} (${cidr2subnetmask(24)})
+// ネットワークアドレス: ${long2ip(getNetworkAddr(ipLong, cidr))}
+// 使用可能IP: ${long2ip(getNetworkAddr(ipLong, cidr) + 1)} 〜 ${long2ip(getBroadcastAddr(ipLong, cidr) - 1)}
+// ブロードキャストアドレス: ${long2ip(getBroadcastAddr(ipLong, cidr))}
+// アドレス数: ${getBroadcastAddr(ipLong, cidr) - getNetworkAddr(ipLong, cidr) + 1}
+// ホストアドレス数: ${getBroadcastAddr(ipLong, cidr) - getNetworkAddr(ipLong, cidr) - 1}
+// IPアドレスクラス: ${getClass(ipLong)}
+// `)
+// console.log(`192.168.0.1 は 192.168.0.254 / 24 に含まれ${inRange(ip2long("192.168.0.1"), ip2long("192.168.1.254"), 24) ? 'ます' : 'ません'} `)
+// console.log(`192.168.1.0 は 192.168.0.254 / 24 に含まれ${inRange(ip2long("192.168.1.0"), ip2long("192.168.0.254"), 24) ? 'ます' : 'ません'} `)
